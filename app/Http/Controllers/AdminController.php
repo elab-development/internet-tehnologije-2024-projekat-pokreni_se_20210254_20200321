@@ -16,6 +16,17 @@ class AdminController extends Controller
         return response()->json($users);
     }
 
+    public function dashboard()
+    {
+        return response()->json([
+            'total_users' => User::count(),
+            'total_registered_users' => User::where('role', 'registered_user')->count(),
+            'total_admins' => User::where('role', 'admin')->count(),
+            'total_events' => Event::count(),
+            'total_sports' => Sport::count(),
+        ]);
+    }
+
     
     public function deleteUser($id)
     {

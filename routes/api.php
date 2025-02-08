@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SportController;
@@ -11,69 +10,42 @@ use App\Http\Controllers\EventParticipantController;
 use App\Http\Controllers\AdminController;
 
 
-// Registracija
-Route::post('/register', [AuthController::class, 'register']);
-
-// Prijava
-Route::post('/login', [AuthController::class, 'login']);
-
-// Odjava
-Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
-
-// Pregled profila korisnika
-Route::middleware('auth:sanctum')->get('/profile', [UserController::class, 'profile']);
-
-// Pregled svih korisnika (admin)
-Route::middleware(['auth:sanctum', 'admin'])->get('/users', [UserController::class, 'index']);
-
-// Lista svih sportova
+// 🔹 Public routes (Guests can only view/search events & sports)
+Route::get('/events', [EventController::class, 'index']);  
+Route::get('/events/search', [EventController::class, 'search']);  
 Route::get('/sports', [SportController::class, 'index']);
-
-// Detalji jednog sporta
 Route::get('/sports/{id}', [SportController::class, 'show']);
 
-// Lista svih događaja
-Route::get('/events', [EventController::class, 'index']);
+// 🔹 Authentication routes (Register, Login, Logout, Profile)
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
+Route::middleware('auth:sanctum')->get('/profile', [AuthController::class, 'profile']);
 
-// Kreiranje događaja
-Route::middleware('auth:sanctum')->post('/events', [EventController::class, 'store']);
 
-// Detalji događaja
-Route::get('/events/{id}', [EventController::class, 'show']);
+// 🔹 Routes for Registered Users (Create/Delete Their Own Events)
+Route::middleware(['auth:sanctum', 'is_registered_user'])->group(function () {
+    Route::post('/events', [EventController::class, 'store']); // ✅ Registered users can create events
+    Route::delete('/events/{id}', [EventController::class, 'destroy']); // ✅ Registered users can delete their own events
+    Route::post('/events/{event}/participants', [EventParticipantController::class, 'store']); // ✅ Registered users can join events
+    Route::delete('/events/{event}/participants/{participant}', [EventParticipantController::class, 'destroy']); // ✅ Registered users can leave events
+    Route::get('/events/{event}/participants', [EventParticipantController::class, 'index']); // ✅ Registered users can view event participants
+});
 
-// Ažuriranje događaja
-Route::middleware('auth:sanctum')->put('/events/{id}', [EventController::class, 'update']);
-
-// Brisanje događaja
-Route::middleware('auth:sanctum')->delete('/events/{id}', [EventController::class, 'destroy']);
-
-// Prijavljivanje na događaj
-Route::middleware('auth:sanctum')->post('/events/{id}/join', [EventParticipantController::class, 'store']);
-
-// Odlazak sa događaja
-Route::middleware('auth:sanctum')->delete('/events/{id}/leave', [EventParticipantController::class, 'destroy']);
-
-// Lista učesnika za određeni događaj
-Route::get('/events/{id}/participants', [EventParticipantController::class, 'index']);
-
-// Rute za AdminController
+// 🔹 Admin Routes (Manage Users, Events, Sports)
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
+    // 🔸 User management
     Route::get('/admin/users', [AdminController::class, 'getUsers']);
     Route::delete('/admin/users/{id}', [AdminController::class, 'deleteUser']);
 
-    Route::post('/admin/events', [AdminController::class, 'createEvent']);
-    Route::delete('/admin/events/{id}', [AdminController::class, 'deleteEvent']);
+    // 🔸 Sports management
+    Route::post('/sports', [SportController::class, 'store']); 
+    Route::put('/sports/{id}', [SportController::class, 'update']); 
+    Route::delete('/sports/{id}', [SportController::class, 'destroy']); 
 
-    Route::get('/admin/sports', [AdminController::class, 'getSports']);
-    Route::post('/admin/sports', [AdminController::class, 'createSport']);
-});
+    // 🔸 Event management (Admins can delete any event)
+    Route::delete('/events/{id}', [EventController::class, 'destroy']); 
 
-
-Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    // 🔸 Dashboard
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
 });
-
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');

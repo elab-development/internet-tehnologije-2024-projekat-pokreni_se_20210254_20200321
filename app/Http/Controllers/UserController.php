@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Resources\UserResource;
+use App\Models\User;
 
 class UserController
 {
@@ -12,6 +14,7 @@ class UserController
     public function index()
     {
         //
+        return UserResource::collection(User::paginate(10));
     }
 
     /**
