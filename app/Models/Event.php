@@ -18,6 +18,7 @@ class Event extends Model
         'max_participants',
         'start_time',
         'user_id',
+        'image',
     ];
 
     

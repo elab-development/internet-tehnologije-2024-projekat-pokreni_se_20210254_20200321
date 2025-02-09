@@ -7,6 +7,7 @@ use App\Http\Resources\EventResource;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
 
+
 class EventController
 {
     /**
@@ -55,14 +56,29 @@ class EventController
         'location' => 'required|string|max:255',
         'max_participants' => 'required|integer|min:1',
         'start_time' => 'required|date|after:today',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // ✅ Validate image
     ]);
 
-    if (Auth::user()->role !== 'admin') {
-        return response()->json(['error' => 'Unauthorized. Only admins can create events.'], 403);
+    if (!Auth::check()) {
+        return response()->json(['error' => 'Unauthorized. Please log in.'], 401);
+    }
+    
+    if (Auth::user()->role !== 'registered_user') {
+        return response()->json(['error' => 'Unauthorized. Only registered users can create events.'], 403);
+    }
+    
+    
+    
+
+    // ✅ Handle image upload
+    $imagePath = null;
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('events', 'public'); // ✅ Store in `storage/app/public/events`
     }
 
     $event = Event::create(array_merge($validated, [
-        'user_id' => Auth::id()
+        'user_id' => Auth::id(), // ✅ Use Auth::id()
+        'image' => $imagePath,
     ]));
 
     return response()->json([
@@ -70,6 +86,7 @@ class EventController
         'event' => new EventResource($event),
     ], 201);
 }
+
 
 
 
