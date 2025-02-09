@@ -10,10 +10,14 @@ class IsRegisteredUser
 {
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->role === 'registered_user') {
-            return $next($request);
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized. Please log in.'], 401);
         }
 
-        return response()->json(['error' => 'Unauthorized. Only registered users can perform this action.'], 403);
+        if (Auth::user()->role !== 'registered_user') {
+            return response()->json(['error' => 'Unauthorized. Only registered users can perform this action.'], 403);
+        }
+
+        return $next($request);
     }
 }

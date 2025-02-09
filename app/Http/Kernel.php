@@ -20,8 +20,9 @@ class Kernel extends HttpKernel
 
     protected $routeMiddleware = [
         'auth' => \App\Http\Middleware\Authenticate::class,
-        'is_admin' => \App\Http\Middleware\IsAdmin::class,
         'is_registered_user' => \App\Http\Middleware\IsRegisteredUser::class,
+        'is_admin' => \App\Http\Middleware\IsAdmin::class,
+        
     ];
 
     protected $middlewareGroups = [
