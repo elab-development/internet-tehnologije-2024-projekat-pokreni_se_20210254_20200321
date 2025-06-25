@@ -53,7 +53,7 @@ const EventDetails = () => {
         <p><strong>📖 Description:</strong> {event.description}</p>
       </div>
       {/* Join Event Button */}
-      <button className={'btn ${joined ? "joined-btn" : ""}'} onClick={handleJoinEvent} disabled={joined}>
+      <button className={`btn ${joined ? "joined-btn" : ""}`} onClick={handleJoinEvent} disabled={joined}>
         {joined ? "✅ Joined" : "Join Event"}
       </button>
     </div>

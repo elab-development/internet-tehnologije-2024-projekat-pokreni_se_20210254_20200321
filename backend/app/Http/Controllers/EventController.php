@@ -94,10 +94,11 @@ class EventController
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-    }
+    public function show($id)
+{
+    $event = Event::findOrFail($id);
+    return new EventResource($event); // ✅ this is correct
+}
 
     /**
      * Show the form for editing the specified resource.

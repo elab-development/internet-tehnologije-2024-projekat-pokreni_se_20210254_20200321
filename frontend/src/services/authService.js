@@ -1,52 +1,57 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/auth"; // Adjust the URL to match your backend
+const API_URL = "http://localhost:8000/api";
 
-// Function to login user
-export const loginUser = async (userData) => {
-  try {
-    const response = await fetch("http://localhost:5000/api/login", { // Change API URL
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-    const data = await response.json();
-    
-    if (!response.ok) throw new Error(data.message || "Login failed");
-    
-    localStorage.setItem("token", data.token);
-    return data;
-  } catch (error) {
-    throw error.message;
-  }
-};
-
+// 🔐 Register new user
 export const registerUser = async (userData) => {
   try {
-    const response = await fetch("http://localhost:5000/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(userData),
-    });
-    const data = await response.json();
-    
-    if (!response.ok) throw new Error(data.message || "Registration failed");
-
-    return data;
+    const response = await axios.post(`${API_URL}/register`, userData);
+    console.log("✅ Registration response:", response.data);
+    return response.data;
   } catch (error) {
-    throw error.message;
+    console.error("❌ Registration failed:", error.response?.data || error.message);
+
+    // 🔍 Log detailed validation errors
+    if (error.response?.data?.errors) {
+      console.table(error.response.data.errors);
+    }
+
+    throw new Error(
+      error.response?.data?.message || "Registration failed. Please check your input."
+    );
   }
 };
 
-// Function to get the current user
-export const getCurrentUser = () => {
-  return localStorage.getItem("token"); // Retrieve stored token
+// 🔐 Login user
+export const loginUser = async (userData) => {
+  try {
+    const response = await axios.post(`${API_URL}/login`, userData);
+    const data = response.data;
+
+    // Store token locally (optional: store user too if returned)
+    localStorage.setItem("token", data.access_token);
+    return data;
+  } catch (error) {
+    console.error("❌ Login failed:", error.response?.data || error.message);
+    throw new Error(
+      error.response?.data?.message || "Login failed. Please check your credentials."
+    );
+  }
 };
 
+// 🔐 Get current user token from local storage
+export const getCurrentUser = () => {
+  return localStorage.getItem("token");
+};
+
+// 🔐 Logout user
 export const logoutUser = () => {
   localStorage.removeItem("token");
+  localStorage.removeItem("user"); // if you're storing user object too
 };
+
+// 🔐 Get role from stored user object
 export const getUserRole = () => {
   const user = JSON.parse(localStorage.getItem("user"));
-  return user?.role || "guest"; // Default to "guest" if no role found
+  return user?.role || "guest";
 };

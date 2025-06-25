@@ -8,7 +8,7 @@ const EventCard = ({ event }) => {
       <p><strong>🏅 Sport:</strong> {event.sport}</p>
       <p><strong>📍 Location:</strong> {event.location}</p>
       <p><strong>📆 Date:</strong> {new Date(event.date).toLocaleDateString()}</p>
-      <Link to={'/event/${event.id}'} className="btn">View Details</Link>
+      <Link to={`/event/${event.id}`} className="btn">View Details</Link>
     </div>
   );
 };
