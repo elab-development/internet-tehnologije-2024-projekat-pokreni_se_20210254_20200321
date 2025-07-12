@@ -14,15 +14,20 @@ class EventParticipantController extends Controller
      */
     public function index($eventId)
     {
-        $event = Event::with('participants.user')->find($eventId);
+        $event = \App\Models\Event::with('participants.user')->find($eventId);
 
         if (!$event) {
             return response()->json(['error' => 'Event not found.'], 404);
         }
 
+        // Get participant users
+        $participants = $event->participants->map(function ($participant) {
+            return $participant->user;
+        })->filter();
+
         return response()->json([
             'event' => $event->name,
-            'participants' => $event->participants
+            'participants' => $participants->values(),
         ]);
     }
 
@@ -37,6 +42,11 @@ class EventParticipantController extends Controller
         // Check if the user is already in the event
         if (EventParticipant::where('user_id', $user->id)->where('event_id', $eventId)->exists()) {
             return response()->json(['message' => 'You are already in this event.'], 400);
+        }
+
+        // Check if event is full
+        if ($event->participants()->count() >= $event->max_participants) {
+            return response()->json(['message' => 'Event is full.'], 400);
         }
 
         // Add user to event
@@ -63,5 +73,16 @@ class EventParticipantController extends Controller
         $participant->delete();
 
         return response()->json(['message' => 'Successfully left the event.']);
+    }
+
+    /**
+     * Get all events the authenticated user has joined.
+     */
+    public function myJoinedEvents(Request $request)
+    {
+        $user = $request->user();
+        $eventIds = \App\Models\EventParticipant::where('user_id', $user->id)->pluck('event_id');
+        $events = \App\Models\Event::whereIn('id', $eventIds)->with(['sport', 'user'])->get();
+        return \App\Http\Resources\EventResource::collection($events);
     }
 }

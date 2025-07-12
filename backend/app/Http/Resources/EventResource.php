@@ -16,6 +16,7 @@ class EventResource extends JsonResource
         'sport' => new SportResource($this->sport),
         'location' => $this->location,
         'max_participants' => $this->max_participants,
+        'participants_count' => $this->participants()->count(),
         'start_time' => $this->start_time->format('Y-m-d H:i:s'),
         'image' => $this->image ? asset('storage/' . $this->image) : null, 
         'organizer' => $this->user ? new UserResource($this->user) : null,
