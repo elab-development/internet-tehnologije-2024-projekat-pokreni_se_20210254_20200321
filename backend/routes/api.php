@@ -11,6 +11,7 @@ use App\Http\Controllers\AdminController;
 
 // 🔹 Public Routes (Guests can only view/search events & sports)
 Route::get('/events', [EventController::class, 'index']);  
+Route::get('/events/{id}', [EventController::class, 'show']);
 Route::get('/events/search', [EventController::class, 'search']);  
 Route::get('/sports', [SportController::class, 'index']);
 Route::get('/sports/{id}', [SportController::class, 'show']);
@@ -20,10 +21,13 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->post('/logout', [AuthController::class, 'logout']);
 Route::middleware('auth:sanctum')->get('/profile', [AuthController::class, 'profile']);
+Route::middleware('auth:sanctum')->get('/my-joined-events', [\App\Http\Controllers\EventParticipantController::class, 'myJoinedEvents']);
+Route::middleware('auth:sanctum')->get('/my-created-events', [\App\Http\Controllers\EventController::class, 'myCreatedEvents']);
 
 // 🔹 Registered Users Routes (Create/Delete Own Events, Join Events)
-Route::middleware(['auth:sanctum', 'is_registered_user'])->group(function () {
+Route::middleware(['auth:sanctum', 'registered_user'])->group(function () {
     Route::post('/events', [EventController::class, 'store']); 
+    Route::put('/events/{id}', [EventController::class, 'update']);
     Route::delete('/events/{id}', [EventController::class, 'destroy']); 
 
     // 🔹 Event Participation
