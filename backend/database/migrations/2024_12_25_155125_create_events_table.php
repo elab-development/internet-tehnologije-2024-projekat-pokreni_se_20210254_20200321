@@ -18,7 +18,7 @@ return new class extends Migration
         $table->foreignId('sport_id')->constrained('sports')->onDelete('cascade');
         $table->string('location');
         $table->integer('max_participants');
-        $table->timestamp('start_time');
+        $table->timestamp('start_time')->useCurrent();
         $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         $table->timestamps();
     });
