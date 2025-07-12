@@ -20,7 +20,7 @@ const EventList = ({ events, setEditingEvent }) => {
       {events.map(event => (
         <div key={event.id} className="event-card">
           <h3>{event.name}</h3>
-          <p>📅 {new Date(event.date).toLocaleDateString()}</p>
+          <p>📅 {new Date(event.start_time).toLocaleDateString()}</p>
           
           {/* Edit & Delete Buttons */}
           {role === "admin" || (role === "registered_user" && event.userId === user?.id) ? (

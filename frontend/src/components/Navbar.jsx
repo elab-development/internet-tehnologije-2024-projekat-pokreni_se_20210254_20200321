@@ -1,7 +1,13 @@
 import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const Navbar = () => {
-  const isAuthenticated = localStorage.getItem("token");
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/login";
+  };
 
   return (
     <nav className="navbar">
@@ -10,17 +16,16 @@ const Navbar = () => {
       {isAuthenticated ? (
         <>
           <Link to="/profile">👤 Profile</Link>
-          <button onClick={() => { localStorage.removeItem("token"); window.location.href = "/login"; }}>🚪 Logout</button>
+          {user?.role === "admin" && <Link to="/admin">🔧 Admin</Link>}
+          <button onClick={handleLogout}>🚪 Logout</button>
         </>
       ) : (
         <>
           <Link to="/login">🔑 Login</Link>
           <Link to="/register">📝 Register</Link>
-          
         </>
       )}
       <Link to="/create-event">+ New Event</Link>
-       
     </nav>
   );
 };
