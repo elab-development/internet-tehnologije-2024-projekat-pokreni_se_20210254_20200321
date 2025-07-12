@@ -1,37 +1,46 @@
 import { useEffect, useState } from "react";
-import { fetchEvents } from "../services/eventService";
+import { fetchSports } from "../services/sportService";
 import EventCard from "../components/EventCard";
+import useEventData from "../hooks/useEventData";
 
 const Home = () => {
-  const [events, setEvents] = useState([]);
-  const [search, setSearch] = useState("");
-  const [sport, setSport] = useState("");
-  const [location, setLocation] = useState("");
-  const [date, setDate] = useState("");
-  const [sortOption, setSortOption] = useState("newest");
+  const [sports, setSports] = useState([]);
+  const {
+    events,
+    loading,
+    error,
+    pagination,
+    filters,
+    updateFilters,
+    resetFilters,
+    goToPage,
+    hasFilters
+  } = useEventData();
 
+  // Fetch sports on mount
   useEffect(() => {
-    const loadEvents = async () => {
-      const data = await fetchEvents();
-      setEvents(data);
+    const loadSports = async () => {
+      const sportsData = await fetchSports();
+      setSports(sportsData);
     };
-    loadEvents();
+    loadSports();
   }, []);
 
-  // 🔍 Apply Filters
-  const filteredEvents = events.filter(event =>
-    (search === "" || event.name.toLowerCase().includes(search.toLowerCase())) &&
-    (sport === "" || event.sport.toLowerCase() === sport.toLowerCase()) &&
-    (location === "" || event.location.toLowerCase().includes(location.toLowerCase())) &&
-    (date === "" || new Date(event.date) >= new Date(date))
-  );
+  const handleFilterChange = (filterName, value) => {
+    updateFilters({ [filterName]: value });
+  };
 
-  // 📌 Apply Sorting
-  const sortedEvents = [...filteredEvents].sort((a, b) => {
-    if (sortOption === "newest") return new Date(b.date) - new Date(a.date);
-    if (sortOption === "oldest") return new Date(a.date) - new Date(b.date);
-    return 0;
-  });
+  const handlePageChange = (newPage) => {
+    goToPage(newPage);
+  };
+
+  if (loading) {
+    return <div className="container"><p>Loading events...</p></div>;
+  }
+
+  if (error) {
+    return <div className="container"><p>Error: {error}</p></div>;
+  }
 
   return (
     <div className="container">
@@ -39,29 +48,114 @@ const Home = () => {
 
       {/* 🔍 Filters */}
       <div className="filters">
-        <input type="text" placeholder="Search events..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-box" />
-        <select value={sport} onChange={(e) => setSport(e.target.value)} className="input-box">
+        <input 
+          type="text" 
+          placeholder="Search events..." 
+          value={filters.search} 
+          onChange={(e) => handleFilterChange('search', e.target.value)} 
+          className="input-box" 
+        />
+        <select 
+          value={filters.sport} 
+          onChange={(e) => handleFilterChange('sport', e.target.value)} 
+          className="input-box"
+        >
           <option value="">All Sports</option>
-          <option value="Basketball">Basketball</option>
-          <option value="Soccer">Soccer</option>
-          <option value="Tennis">Tennis</option>
+          {sports.map(sportItem => (
+            <option key={sportItem.id} value={sportItem.name}>
+              {sportItem.name}
+            </option>
+          ))}
         </select>
-        <input type="text" placeholder="Location..." value={location} onChange={(e) => setLocation(e.target.value)} className="input-box" />
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input-box" />
-        <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="input-box">
-          <option value="newest">Newest First</option>
-          <option value="oldest">Oldest First</option>
+        <input 
+          type="text" 
+          placeholder="Location..." 
+          value={filters.location} 
+          onChange={(e) => handleFilterChange('location', e.target.value)} 
+          className="input-box" 
+        />
+        <input 
+          type="date" 
+          value={filters.date} 
+          onChange={(e) => handleFilterChange('date', e.target.value)} 
+          className="input-box" 
+        />
+        <select 
+          value={filters.sort} 
+          onChange={(e) => handleFilterChange('sort', e.target.value)} 
+          className="input-box"
+        >
+          <option value="date">Newest First</option>
+          <option value="date_asc">Oldest First</option>
         </select>
+        {hasFilters && (
+          <button onClick={resetFilters} className="btn">Clear Filters</button>
+        )}
       </div>
 
       {/* 🎴 Event List */}
       <div className="event-grid">
-        {sortedEvents.length > 0 ? (
-          sortedEvents.map(event => <EventCard key={event.id} event={event} />)
+        {events.length > 0 ? (
+          events.map(event => <EventCard key={event.id} event={event} />)
         ) : (
           <p>No events found.</p>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {pagination.last_page > 1 && (
+  <div className="pagination" style={{ 
+        display: "flex", 
+        gap: 12, 
+        justifyContent: "center", 
+        marginTop: 32, 
+        marginBottom: 32,
+        alignItems: "center",
+        padding: "16px",
+        backgroundColor: "#f8f9fa",
+        borderRadius: "8px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+          <button 
+            className="btn" 
+            onClick={() => handlePageChange(pagination.current_page - 1)} 
+            disabled={pagination.current_page === 1}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: pagination.current_page === 1 ? "#ccc" : "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: pagination.current_page === 1 ? "not-allowed" : "pointer"
+            }}
+          >
+            ← Prev
+          </button>
+          <span style={{ 
+            margin: '0 16px', 
+            fontWeight: 600,
+            fontSize: "16px",
+            color: "#333"
+          }}>
+            Page {pagination.current_page} of {pagination.last_page}
+          </span>
+          <button 
+            className="btn" 
+            onClick={() => handlePageChange(pagination.current_page + 1)} 
+            disabled={pagination.current_page === pagination.last_page}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: pagination.current_page === pagination.last_page ? "#ccc" : "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: pagination.current_page === pagination.last_page ? "not-allowed" : "pointer"
+            }}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 };

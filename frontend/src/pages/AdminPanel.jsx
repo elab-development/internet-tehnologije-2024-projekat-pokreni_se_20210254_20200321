@@ -1,4 +1,5 @@
 import SportForm from "../components/SportForm"; // Import the form
+import EventList from "../components/EventList";
 
 const AdminPanel = () => {
   return (
