@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Resources\EventResource;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
+use App\Services\GeolocationService;
+use App\Services\EventSummaryService;
 
 
 class EventController
@@ -17,19 +19,55 @@ class EventController
     {
         $query = Event::query();
     
-        // Filter by sport
-        if ($request->has('sport_id')) {
-            $query->where('sport_id', $request->sport_id);
+        // Search by event name
+        if ($request->has('search') && $request->search) {
+            $query->where('name', 'LIKE', "%{$request->search}%");
+        }
+    
+        // Filter by sport name
+        if ($request->has('sport') && $request->sport) {
+            $query->whereHas('sport', function($q) use ($request) {
+                $q->where('name', 'LIKE', "%{$request->sport}%");
+            });
         }
     
         // Filter by location
-        if ($request->has('location')) {
+        if ($request->has('location') && $request->location) {
             $query->where('location', 'LIKE', "%{$request->location}%");
         }
     
         // Filter by start date
-        if ($request->has('start_date')) {
+        if ($request->has('start_date') && $request->start_date) {
             $query->whereDate('start_time', '>=', $request->start_date);
+        }
+
+        // Filter by event status (upcoming/past)
+        if ($request->has('status')) {
+            $now = now();
+            switch ($request->status) {
+                case 'upcoming':
+                    $query->where('start_time', '>', $now);
+                    break;
+                case 'past':
+                    $query->where('start_time', '<', $now);
+                    break;
+                // 'all' shows all events (no filter)
+            }
+        }
+
+        // Sort events
+        if ($request->has('sort')) {
+            switch ($request->sort) {
+                case 'date_asc':
+                    $query->orderBy('start_time', 'asc');
+                    break;
+                case 'date':
+                default:
+                    $query->orderBy('start_time', 'desc');
+                    break;
+            }
+        } else {
+            $query->orderBy('start_time', 'desc');
         }
     
         return EventResource::collection($query->paginate(10));
@@ -197,6 +235,92 @@ class EventController
         $user = $request->user();
         $events = \App\Models\Event::where('user_id', $user->id)->with(['sport', 'user'])->get();
         return \App\Http\Resources\EventResource::collection($events);
+    }
+
+
+
+    /**
+     * Get coordinates for an address
+     */
+    public function getCoordinates($address)
+    {
+        try {
+            $geolocationService = new GeolocationService();
+            $coordinates = $geolocationService->getCoordinates($address);
+            
+            if ($coordinates) {
+                return response()->json([
+                    'success' => true,
+                    'coordinates' => $coordinates
+                ]);
+            }
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Coordinates not found for this address'
+            ], 404);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching coordinates'
+            ], 500);
+        }
+    }
+
+    /**
+     * Performance test endpoint
+     */
+    public function performanceTest()
+    {
+        $startTime = microtime(true);
+        
+        // Test basic event loading (without weather)
+        $events = Event::with(['sport', 'user'])->limit(5)->get();
+        $basicLoadTime = microtime(true) - $startTime;
+        
+        // Test event loading with weather
+        $weatherStartTime = microtime(true);
+        $eventsWithWeather = Event::with(['sport', 'user'])->limit(1)->get();
+        $weatherLoadTime = microtime(true) - $weatherStartTime;
+        
+        return response()->json([
+            'basic_load_time' => round($basicLoadTime * 1000, 2) . 'ms',
+            'weather_load_time' => round($weatherLoadTime * 1000, 2) . 'ms',
+            'performance_impact' => round(($weatherLoadTime / $basicLoadTime) * 100, 1) . '% slower',
+            'recommendation' => 'Use ?include_weather=1 only when needed'
+        ]);
+    }
+
+
+
+    /**
+     * Summary debug endpoint
+     */
+    public function summaryDebug($eventId)
+    {
+        try {
+            $event = Event::with('sport', 'user')->findOrFail($eventId);
+            $summaryService = new EventSummaryService();
+            $summary = $summaryService->generateEventSummary($event);
+            
+            return response()->json([
+                'success' => true,
+                'event_id' => $eventId,
+                'event_name' => $event->name,
+                'huggingface_configured' => !empty(config('services.huggingface.api_key')),
+                'ollama_configured' => !empty(config('services.ollama.url')),
+                'summary' => $summary,
+                'summary_length' => strlen($summary)
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'event_id' => $eventId
+            ], 500);
+        }
     }
 
 }

@@ -16,6 +16,17 @@ Route::get('/events/search', [EventController::class, 'search']);
 Route::get('/sports', [SportController::class, 'index']);
 Route::get('/sports/{id}', [SportController::class, 'show']);
 
+// 🔹 Geolocation Routes (Optional - Add ?include_coordinates=1 to event requests)
+Route::get('/geolocation/coordinates/{address}', [EventController::class, 'getCoordinates']);
+
+// 🔹 Performance Test Route
+Route::get('/performance-test', [EventController::class, 'performanceTest']);
+
+
+
+// 🔹 Summary Debug Route
+Route::get('/summary-debug/{event}', [EventController::class, 'summaryDebug']);
+
 // 🔹 Authentication Routes (Register, Login, Logout, Profile)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

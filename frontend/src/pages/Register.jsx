@@ -16,7 +16,7 @@ const Register = () => {
     
     const result = await register({ name, email, password });
     if (result.success) {
-      window.location.href = "/";
+      navigate("/");
     }
   };
 

@@ -7,6 +7,13 @@ export const registerUser = async (userData) => {
   try {
     const response = await api.post(`${API_URL}/register`, userData);
     console.log("✅ Registration response:", response.data);
+    
+    // Store token and user data immediately after successful registration
+    if (response.data.access_token) {
+      localStorage.setItem("token", response.data.access_token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+    }
+    
     return response.data;
   } catch (error) {
     console.error("❌ Registration failed:", error.response?.data || error.message);

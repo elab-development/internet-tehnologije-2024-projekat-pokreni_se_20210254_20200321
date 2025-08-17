@@ -3,9 +3,14 @@ import "../styles.css";
 
 const EventCard = ({ event }) => {
   const isFull = event.participants_count !== undefined && event.max_participants !== undefined && event.participants_count >= event.max_participants;
+  const isPastEvent = new Date(event.start_time) < new Date();
+  
   return (
     <div className="card">
-      {isFull && (
+      {isPastEvent && (
+        <div style={{color: '#ff6b35', fontWeight: 700, marginBottom: 8, fontSize: 18}}>PAST EVENT</div>
+      )}
+      {!isPastEvent && isFull && (
         <div style={{color: 'red', fontWeight: 700, marginBottom: 8, fontSize: 18}}>FULL</div>
       )}
       <h3>{event.name}</h3>

@@ -485,6 +485,51 @@ DB_USERNAME=your-db-user
 DB_PASSWORD=your-db-password
 ```
 
+## 🤖 AI Event Summary Setup
+
+The app includes AI-powered event summaries using free LLM services:
+
+### Option 1: Hugging Face API (Recommended - Free Tier)
+1. **Get Hugging Face API Key:**
+   - Go to [Hugging Face](https://huggingface.co/settings/tokens)
+   - Create a new access token
+   - Copy the token
+
+2. **Add to .env file:**
+   ```env
+   HUGGINGFACE_API_KEY=your_huggingface_token_here
+   ```
+
+### Option 2: Ollama (Local - Completely Free)
+1. **Install Ollama:**
+   - Download from [ollama.ai](https://ollama.ai/)
+   - Install and start Ollama
+   - Pull a model: `ollama pull llama2`
+
+2. **Add to .env file (optional):**
+   ```env
+   OLLAMA_URL=http://localhost:11434
+   ```
+
+### Option 3: Template Fallback
+If neither LLM service is available, the system will generate a template-based summary.
+
+### Test the Summary API:
+```bash
+# Test with event ID 1
+curl "http://localhost:8000/api/summary-debug/1"
+
+# Get event with summary included
+curl "http://localhost:8000/api/events/1?include_summary=1"
+```
+
+**Features:**
+- ✅ **Free to use** (Hugging Face free tier or local Ollama)
+- ✅ **Cached for 1 hour** to improve performance
+- ✅ **Fallback system** ensures summaries always work
+- ✅ **Sport-specific** summaries based on event details
+- ✅ **Optional loading** - only loads when requested
+
 ## 🤝 Contributing
 
 1. Fork the repository

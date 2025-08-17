@@ -88,6 +88,15 @@ const Home = () => {
           <option value="date">Newest First</option>
           <option value="date_asc">Oldest First</option>
         </select>
+        <select 
+          value={filters.status || 'all'} 
+          onChange={(e) => handleFilterChange('status', e.target.value)} 
+          className="input-box"
+        >
+          <option value="all">All Events</option>
+          <option value="upcoming">Upcoming Only</option>
+          <option value="past">Past Events</option>
+        </select>
         {hasFilters && (
           <button onClick={resetFilters} className="btn">Clear Filters</button>
         )}

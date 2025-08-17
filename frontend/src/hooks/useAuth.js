@@ -37,8 +37,6 @@ const useAuth = () => {
       const response = await loginUser(credentials);
       
       if (response.access_token && response.user) {
-        localStorage.setItem("token", response.access_token);
-        localStorage.setItem("user", JSON.stringify(response.user));
         setUser(response.user);
         setIsAuthenticated(true);
         return { success: true };
@@ -61,8 +59,6 @@ const useAuth = () => {
       const response = await registerUser(userData);
       
       if (response.access_token && response.user) {
-        localStorage.setItem("token", response.access_token);
-        localStorage.setItem("user", JSON.stringify(response.user));
         setUser(response.user);
         setIsAuthenticated(true);
         return { success: true };

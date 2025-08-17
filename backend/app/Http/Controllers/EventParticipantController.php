@@ -44,6 +44,11 @@ class EventParticipantController extends Controller
             return response()->json(['message' => 'You are already in this event.'], 400);
         }
 
+        // Check if event has already passed
+        if (new \DateTime($event->start_time) < new \DateTime()) {
+            return response()->json(['message' => 'Cannot join an event that has already passed.'], 400);
+        }
+
         // Check if event is full
         if ($event->participants()->count() >= $event->max_participants) {
             return response()->json(['message' => 'Event is full.'], 400);

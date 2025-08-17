@@ -17,7 +17,8 @@ const EventDetails = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetchEventById(id).then(response => {
+    // Fetch event with coordinates and summary data
+    fetchEventById(id, { include_coordinates: 1, include_summary: 1 }).then(response => {
       setEvent(response?.data);
       setLoading(false);
     });
@@ -27,6 +28,7 @@ const EventDetails = () => {
   // Check if user is a participant
   const isJoined = user && participants.some(p => (p.id || p.user_id) === user.id);
   const isFull = event && participants.length >= event.max_participants;
+  const isPastEvent = event && new Date(event.start_time) < new Date();
 
   const handleJoinEvent = async () => {
     setJoining(true);
@@ -78,10 +80,79 @@ const EventDetails = () => {
         <p><strong>👥 Max Participants:</strong> {event.max_participants}</p>
         <p><strong>📆 Date:</strong> {new Date(event.start_time).toLocaleString()}</p>
         <p><strong>📖 Description:</strong> {event.description}</p>
+        
+        {/* AI Summary */}
+        {event.ai_summary && (
+          <div style={{ 
+            background: "#16213a", 
+            borderRadius: 10, 
+            padding: 16, 
+            marginTop: 16
+          }}>
+            <h3 style={{ color: "#f4a261", margin: "0 0 12px 0" }}>🤖 AI Event Summary</h3>
+            <p style={{ 
+              color: "#fff", 
+              lineHeight: "1.6",
+              margin: 0,
+              fontSize: "14px"
+            }}>
+              {event.ai_summary}
+            </p>
+          </div>
+        )}
+        
+
+        
+        {/* Geolocation Information */}
+        {event.coordinates && (
+          <div style={{ 
+            background: "#16213a", 
+            borderRadius: 10, 
+            padding: 16, 
+            marginTop: 16 
+          }}>
+            <h3 style={{ color: "#f4a261", margin: "0 0 12px 0" }}>🗺️ Location Details</h3>
+            <p style={{ margin: "8px 0", color: "#ccc" }}>
+              <strong>Coordinates:</strong> {event.coordinates.latitude}, {event.coordinates.longitude}
+            </p>
+            <p style={{ margin: "8px 0", color: "#ccc" }}>
+              <strong>Address:</strong> {event.coordinates.display_name}
+            </p>
+            <a 
+              href={`https://www.openstreetmap.org/?mlat=${event.coordinates.latitude}&mlon=${event.coordinates.longitude}&zoom=15`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ 
+                display: "inline-block",
+                background: "#f4a261", 
+                color: "#1b263b", 
+                padding: "8px 16px", 
+                borderRadius: 6, 
+                textDecoration: "none",
+                fontWeight: "bold",
+                marginTop: 8
+              }}
+            >
+              🗺️ View on Map
+            </a>
+          </div>
+        )}
       </div>
       {error && <div className="error">{error}</div>}
       {/* Join/Leave Event Button */}
-      {!isJoined ? (
+      {isPastEvent ? (
+        <div style={{ 
+          background: "#ff6b35", 
+          color: "white", 
+          padding: "12px", 
+          borderRadius: "8px", 
+          textAlign: "center",
+          marginBottom: 18,
+          fontWeight: "bold"
+        }}>
+          ⏰ This event has already passed
+        </div>
+      ) : !isJoined ? (
         <button
           className="btn"
           onClick={handleJoinEvent}

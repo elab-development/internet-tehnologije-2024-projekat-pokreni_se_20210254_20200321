@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'registered_user' => \App\Http\Middleware\IsRegisteredUser::class,
             'is_admin' => \App\Http\Middleware\IsAdmin::class,
         ]);
+        
+        // Add CORS middleware
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

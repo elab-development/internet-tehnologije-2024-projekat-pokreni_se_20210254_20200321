@@ -1,8 +1,17 @@
 import api from "./axiosConfig";
 
-export const fetchEvents = async (page = 1) => {
+export const fetchEvents = async (page = 1, params = {}) => {
   try {
-    const response = await api.get(`/events?page=${page}`);
+    const queryParams = new URLSearchParams({ page: page.toString() });
+    
+    // Add filter parameters
+    Object.entries(params).forEach(([key, value]) => {
+      if (value && value !== '') {
+        queryParams.append(key, value);
+      }
+    });
+    
+    const response = await api.get(`/events?${queryParams.toString()}`);
     const events = response.data.data || [];
     return {
       events: events.map(event => ({
@@ -22,9 +31,11 @@ export const fetchEvents = async (page = 1) => {
   }
 };
 
-export const fetchEventById = async (id) => {
+export const fetchEventById = async (id, params = {}) => {
   try {
-    const response = await api.get(`/events/${id}`);
+    const queryString = new URLSearchParams(params).toString();
+    const url = queryString ? `/events/${id}?${queryString}` : `/events/${id}`;
+    const response = await api.get(url);
     return response.data;
   } catch (error) {
     console.error("Error fetching event:", error);
