@@ -9,32 +9,24 @@ use Illuminate\Support\Facades\Cache;
 class EventSummaryService
 {
     private $huggingFaceApiKey;
-    private $ollamaUrl;
 
     public function __construct()
     {
         $this->huggingFaceApiKey = config('services.huggingface.api_key');
-        $this->ollamaUrl = config('services.ollama.url', 'http://localhost:11434');
     }
 
     /**
-     * Generate event summary using available LLM services
+     * Generate event summary using Hugging Face API or fallback
      */
     public function generateEventSummary($event)
     {
         try {
-            // Try Hugging Face API first (free tier available)
+            // Try Hugging Face API (free tier available)
             if ($this->huggingFaceApiKey) {
                 $summary = $this->generateWithHuggingFace($event);
                 if ($summary) {
                     return $summary;
                 }
-            }
-
-            // Try Ollama (local, free)
-            $summary = $this->generateWithOllama($event);
-            if ($summary) {
-                return $summary;
             }
 
             // Fallback to template-based summary
@@ -89,41 +81,7 @@ class EventSummaryService
         }
     }
 
-    /**
-     * Generate summary using Ollama (local)
-     */
-    private function generateWithOllama($event)
-    {
-        try {
-            $prompt = $this->buildEventPrompt($event);
-            
-            $response = Http::timeout(30)
-                ->post($this->ollamaUrl . '/api/generate', [
-                    'model' => 'llama2',
-                    'prompt' => $prompt,
-                    'stream' => false,
-                    'options' => [
-                        'temperature' => 0.8,
-                        'num_predict' => 150,
-                        'top_p' => 0.9,
-                        'repeat_penalty' => 1.1
-                    ]
-                ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                if (isset($data['response'])) {
-                    return $this->cleanSummary($data['response']);
-                }
-            }
-
-            return null;
-
-        } catch (\Exception $e) {
-            Log::warning('Ollama API failed', ['error' => $e->getMessage()]);
-            return null;
-        }
-    }
 
     /**
      * Generate template-based summary as fallback

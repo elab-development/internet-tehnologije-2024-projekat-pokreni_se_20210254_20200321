@@ -487,9 +487,9 @@ DB_PASSWORD=your-db-password
 
 ## 🤖 AI Event Summary Setup
 
-The app includes AI-powered event summaries using free LLM services:
+The app includes AI-powered event summaries using Hugging Face's free API:
 
-### Option 1: Hugging Face API (Recommended - Free Tier)
+### Setup Hugging Face API (Free Tier)
 1. **Get Hugging Face API Key:**
    - Go to [Hugging Face](https://huggingface.co/settings/tokens)
    - Create a new access token
@@ -500,19 +500,8 @@ The app includes AI-powered event summaries using free LLM services:
    HUGGINGFACE_API_KEY=your_huggingface_token_here
    ```
 
-### Option 2: Ollama (Local - Completely Free)
-1. **Install Ollama:**
-   - Download from [ollama.ai](https://ollama.ai/)
-   - Install and start Ollama
-   - Pull a model: `ollama pull llama2`
-
-2. **Add to .env file (optional):**
-   ```env
-   OLLAMA_URL=http://localhost:11434
-   ```
-
-### Option 3: Template Fallback
-If neither LLM service is available, the system will generate a template-based summary.
+### Template Fallback
+If the Hugging Face API is not available, the system will generate a template-based summary automatically.
 
 ### Test the Summary API:
 ```bash

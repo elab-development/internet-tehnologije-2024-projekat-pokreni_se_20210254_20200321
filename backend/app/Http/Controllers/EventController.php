@@ -304,15 +304,14 @@ class EventController
             $summaryService = new EventSummaryService();
             $summary = $summaryService->generateEventSummary($event);
             
-            return response()->json([
-                'success' => true,
-                'event_id' => $eventId,
-                'event_name' => $event->name,
-                'huggingface_configured' => !empty(config('services.huggingface.api_key')),
-                'ollama_configured' => !empty(config('services.ollama.url')),
-                'summary' => $summary,
-                'summary_length' => strlen($summary)
-            ]);
+                            return response()->json([
+                    'success' => true,
+                    'event_id' => $eventId,
+                    'event_name' => $event->name,
+                    'huggingface_configured' => !empty(config('services.huggingface.api_key')),
+                    'summary' => $summary,
+                    'summary_length' => strlen($summary)
+                ]);
             
         } catch (\Exception $e) {
             return response()->json([
