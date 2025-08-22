@@ -1,52 +1,95 @@
 import { useEffect, useState } from "react";
-import { fetchSports } from "../services/sportService";
 import EventCard from "../components/EventCard";
-import useEventData from "../hooks/useEventData";
+import Button from "../components/Button";
+import { fetchEvents } from "../services/eventService";
+import { fetchSports } from "../services/sportService";
+import "../styles.css";
 
 const Home = () => {
+  const [events, setEvents] = useState([]);
   const [sports, setSports] = useState([]);
-  const {
-    events,
-    loading,
-    error,
-    pagination,
-    filters,
-    updateFilters,
-    resetFilters,
-    goToPage,
-    hasFilters
-  } = useEventData();
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    current_page: 1,
+    last_page: 1,
+    per_page: 12,
+    total: 0
+  });
+  const [filters, setFilters] = useState({
+    search: "",
+    sport: "",
+    location: "",
+    date: "",
+    sort: "date",
+    status: "all"
+  });
 
-  // Fetch sports on mount
   useEffect(() => {
-    const loadSports = async () => {
+    loadEvents();
+    loadSports();
+  }, [pagination.current_page, filters]);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchEvents(pagination.current_page, filters);
+      setEvents(response.events);
+      setPagination(response.pagination);
+    } catch (error) {
+      console.error("Error loading events:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSports = async () => {
+    try {
       const sportsData = await fetchSports();
       setSports(sportsData);
-    };
-    loadSports();
-  }, []);
-
-  const handleFilterChange = (filterName, value) => {
-    updateFilters({ [filterName]: value });
+    } catch (error) {
+      console.error("Error loading sports:", error);
+    }
   };
 
-  const handlePageChange = (newPage) => {
-    goToPage(newPage);
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPagination(prev => ({ ...prev, current_page: 1 }));
   };
+
+  const resetFilters = () => {
+    setFilters({
+      search: "",
+      sport: "",
+      location: "",
+      date: "",
+      sort: "date",
+      status: "all"
+    });
+    setPagination(prev => ({ ...prev, current_page: 1 }));
+  };
+
+  const handlePageChange = (page) => {
+    setPagination(prev => ({ ...prev, current_page: page }));
+  };
+
+  const hasFilters = Object.values(filters).some(value => value !== "" && value !== "date" && value !== "all");
 
   if (loading) {
-    return <div className="container"><p>Loading events...</p></div>;
-  }
-
-  if (error) {
-    return <div className="container"><p>Error: {error}</p></div>;
+    return (
+      <div className="container">
+        <div className="loading">
+          <div className="spinner"></div>
+          <p>Loading events...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="container">
-      <h1>🏆 Find Your Next Event</h1>
-
-      {/* 🔍 Filters */}
+      <h1>🏆 Sports Events</h1>
+      
+      {/* 🔍 Search & Filters */}
       <div className="filters">
         <input 
           type="text" 
@@ -98,7 +141,9 @@ const Home = () => {
           <option value="past">Past Events</option>
         </select>
         {hasFilters && (
-          <button onClick={resetFilters} className="btn">Clear Filters</button>
+          <Button onClick={resetFilters} variant="secondary" size="small">
+            Clear Filters
+          </Button>
         )}
       </div>
 
@@ -113,56 +158,26 @@ const Home = () => {
 
       {/* Pagination Controls */}
       {pagination.last_page > 1 && (
-  <div className="pagination" style={{ 
-        display: "flex", 
-        gap: 12, 
-        justifyContent: "center", 
-        marginTop: 32, 
-        marginBottom: 32,
-        alignItems: "center",
-        padding: "16px",
-        backgroundColor: "#f8f9fa",
-        borderRadius: "8px",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-            }}>
-          <button 
-            className="btn" 
+        <div className="pagination">
+          <Button 
             onClick={() => handlePageChange(pagination.current_page - 1)} 
             disabled={pagination.current_page === 1}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: pagination.current_page === 1 ? "#ccc" : "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: pagination.current_page === 1 ? "not-allowed" : "pointer"
-            }}
+            variant="secondary"
+            size="small"
           >
             ← Prev
-          </button>
-          <span style={{ 
-            margin: '0 16px', 
-            fontWeight: 600,
-            fontSize: "16px",
-            color: "#333"
-          }}>
+          </Button>
+          <span className="pagination-info">
             Page {pagination.current_page} of {pagination.last_page}
           </span>
-          <button 
-            className="btn" 
+          <Button 
             onClick={() => handlePageChange(pagination.current_page + 1)} 
             disabled={pagination.current_page === pagination.last_page}
-            style={{
-              padding: "8px 16px",
-              backgroundColor: pagination.current_page === pagination.last_page ? "#ccc" : "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: pagination.current_page === pagination.last_page ? "not-allowed" : "pointer"
-            }}
+            variant="secondary"
+            size="small"
           >
             Next →
-          </button>
+          </Button>
         </div>
       )}
     </div>

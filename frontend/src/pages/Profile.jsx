@@ -31,7 +31,6 @@ const Profile = () => {
         <p><strong>Name:</strong> {user.name}</p>
         <p><strong>Email:</strong> {user.email}</p>
         <p><strong>Role:</strong> {getRoleDisplay(user.role)}</p>
-        <p><strong>Registered At:</strong> {user.created_at ? new Date(user.created_at).toLocaleString() : "Unknown"}</p>
       </div>
     </div>
   );

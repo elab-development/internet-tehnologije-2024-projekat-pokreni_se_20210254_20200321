@@ -29,7 +29,7 @@ const Admin = () => {
       ]);
       setStats(statsData);
       setUsers(usersData);
-      setEvents(eventsData);
+      setEvents(eventsData.events); // Extract the events array from the response
       setSports(sportsData);
     } catch (err) {
       setError("Failed to load admin data");

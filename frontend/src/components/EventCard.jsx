@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Button from "./Button";
 import "../styles.css";
 
 const EventCard = ({ event }) => {
@@ -18,7 +19,9 @@ const EventCard = ({ event }) => {
       <p><strong>📍 Location:</strong> {event.location}</p>
       <p><strong>👥 Participants:</strong> {event.participants_count ?? 0} / {event.max_participants}</p>
       <p><strong>📆 Date:</strong> {new Date(event.start_time).toLocaleDateString()}</p>
-      <Link to={`/event/${event.id}`} className="btn">View Details</Link>
+      <Button as={Link} to={`/event/${event.id}`} variant="outline" fullWidth>
+        View Details
+      </Button>
     </div>
   );
 };

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchEventById, leaveEvent, fetchJoinedEvents, fetchCreatedEvents, deleteEvent } from "../services/eventService";
+import LoadingSpinner from "../components/LoadingSpinner";
+import Button from "../components/Button";
 import "../styles.css";
 
 const MyEvents = () => {
@@ -54,10 +56,7 @@ const MyEvents = () => {
   if (loading) {
     return (
       <div className="container">
-        <div className="loading">
-          <div className="spinner"></div>
-          <p>Loading your events...</p>
-        </div>
+        <LoadingSpinner message="Loading your events..." />
       </div>
     );
   }
@@ -93,9 +92,13 @@ const MyEvents = () => {
                   <p><strong>📍 Location:</strong> {event.location}</p>
                   <p><strong>📆 Date:</strong> {new Date(event.start_time).toLocaleDateString()}</p>
                   <p><strong>👤 Organizer:</strong> {event.organizer?.name || 'Unknown'}</p>
-                  <button className="btn leave-btn" onClick={() => handleLeaveEvent(event.id)}>
+                  <Button 
+                    variant="danger" 
+                    onClick={() => handleLeaveEvent(event.id)}
+                    fullWidth
+                  >
                     ❌ Leave Event
-                  </button>
+                  </Button>
                 </div>
               ))
             ) : (
@@ -118,12 +121,20 @@ const MyEvents = () => {
                   <p><strong>📆 Date:</strong> {new Date(event.start_time).toLocaleDateString()}</p>
                   <p><strong>👥 Max Participants:</strong> {event.max_participants}</p>
                   <div className="event-actions">
-                    <button className="btn edit-btn" onClick={() => handleEditEvent(event)}>
+                    <Button 
+                      variant="primary" 
+                      onClick={() => handleEditEvent(event)}
+                      size="small"
+                    >
                       ✏️ Edit Event
-                    </button>
-                    <button className="btn delete-btn" onClick={() => handleDeleteEvent(event.id)}>
+                    </Button>
+                    <Button 
+                      variant="danger" 
+                      onClick={() => handleDeleteEvent(event.id)}
+                      size="small"
+                    >
                       🗑️ Delete Event
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))

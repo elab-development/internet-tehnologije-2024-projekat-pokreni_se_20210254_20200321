@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import Button from "../components/Button";
+import InputField from "../components/InputField";
+import ErrorMessage from "../components/ErrorMessage";
 import "../styles.css";
 
 const Login = () => {
@@ -22,35 +25,35 @@ const Login = () => {
   return (
     <div className="auth-container">
       <h2>🔑 Login</h2>
-      {error && (
-        <p className="error">
-          {Array.isArray(error)
-            ? error.map((e, i) => <span key={i}>{e}<br/></span>)
-            : typeof error === 'object'
-              ? JSON.stringify(error)
-              : error}
-        </p>
-      )}
+      <ErrorMessage message={error} type="error" />
       <form onSubmit={handleSubmit}>
-        <input 
-          type="email" 
-          placeholder="Email" 
-          value={email} 
-          onChange={(e) => setEmail(e.target.value)} 
-          required 
+        <InputField
+          type="email"
+          label="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          required
           disabled={loading}
+          fullWidth
         />
-        <input 
-          type="password" 
-          placeholder="Password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
+        <InputField
+          type="password"
+          label="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter your password"
+          required
           disabled={loading}
+          fullWidth
         />
-        <button type="submit" className="btn" disabled={loading}>
+        <Button 
+          type="submit" 
+          disabled={loading}
+          fullWidth
+        >
           {loading ? "Logging in..." : "Login"}
-        </button>
+        </Button>
       </form>
     </div>
   );
